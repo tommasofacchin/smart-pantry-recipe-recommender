@@ -1,0 +1,15 @@
+american          21551
+european           5641
+asian              5034
+pacific            1394
+african            1237
+greek              1046
+french              809
+german              553
+scandinavian        483
+spanish             376
+latin_american      253
+middle_eastern      178
+mexican             130
+indian              103
+chinese              84

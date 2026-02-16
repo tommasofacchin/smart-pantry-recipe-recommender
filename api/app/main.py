@@ -1,17 +1,31 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from pathlib import Path
+from dotenv import load_dotenv
 
 import pandas as pd
 import numpy as np
 import joblib
 import traceback
+import boto3
+import tempfile
+import os
 
+
+load_dotenv()
+
+# S3
+S3_BUCKET = os.getenv("S3_BUCKET", "smart-pantry-recipes")
+S3_DF_KEY = os.getenv("S3_DF_KEY", "recipes.parquet")
+S3_MODEL_KEY = os.getenv("S3_MODEL_KEY", "recipes.smart_pantry_model")
+S3_DF_PATH = f"s3://{S3_BUCKET}/{S3_DF_KEY}"
+s3 = boto3.client("s3")
 
 app = FastAPI(title="Smart Pantry Recipe Recommender API")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 ARTIFACTS_DIR = BASE_DIR / "artifacts"
+
 
 df = None
 model = None
@@ -29,12 +43,19 @@ def has_forbidden_allergen(recipe_allergens, forbidden):
 def ingredient_overlap(recipe_ingredients, user_ingredients):
     return len(set(recipe_ingredients) & set(user_ingredients))
 
+
 @app.on_event("startup")
 def load_artifacts():
     global df, model
-    df = pd.read_parquet(ARTIFACTS_DIR / "recipes.parquet")
-    print("columns:", df.columns.tolist()) 
-    model = joblib.load(ARTIFACTS_DIR / "recipe_rating_model.joblib")
+
+    df = pd.read_parquet(S3_DF_PATH)
+    print("columns:", df.columns.tolist())
+
+    tmp = tempfile.NamedTemporaryFile(delete=False)
+    s3.download_fileobj(S3_BUCKET, S3_MODEL_KEY, tmp)
+    tmp.flush()
+    model = joblib.load(tmp.name)
+
 
 @app.post("/recommend")
 def recommend(req: RecommendRequest):

@@ -5,4 +5,4 @@ uvicorn[standard]
 scikit-learn==1.6.1
 numpy
 joblib
-
+boto3

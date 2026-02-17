@@ -23,7 +23,7 @@ The project is split into:
 - scikit‑learn (model training & inference)
 - FastAPI, uvicorn (backend)
 - Render (FastAPI backend hosting)
-- AWS S3 (dataset + modello)
+- AWS S3 (dataset + model)
 - Streamlit (UI)
   
 ---

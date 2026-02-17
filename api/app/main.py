@@ -78,7 +78,7 @@ def recommend(req: RecommendRequest):
             ]
             
 
-        if req.ingredients_available:
+        if False:#req.ingredients_available:
             if "ingredients" not in candidates.columns:
                 raise ValueError("Column 'ingredients' not found in dataframe")
             candidates["ingredient_overlap"] = candidates["ingredients"].apply(
@@ -128,4 +128,5 @@ def recommend(req: RecommendRequest):
         traceback.print_exc()
 
         raise HTTPException(status_code=500, detail=str(e))
+
 

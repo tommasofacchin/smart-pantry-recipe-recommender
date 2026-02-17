@@ -2,20 +2,16 @@
 import streamlit as st
 import requests
 
-API_URL = "http://127.0.0.1:8000" # TODO: replace with public AWS URL
+API_URL = "https://smart-pantry-recipe-recommender.onrender.com"
 
 st.set_page_config(page_title="Smart Pantry",)
 
 st.title("Smart Pantry – Recipe Recommender")
 
-st.markdown(
-    "Given your constraints (time, allergens, cuisines), this app calls the "
-    "**Smart Pantry Recipe Recommender API** and returns the best recipes."
-)
 
 # --- User inputs ---
 
-st.subheader("Your constraints")
+st.subheader("Inputs")
 
 allergens = st.multiselect(
     "Allergens to avoid",
@@ -68,17 +64,16 @@ if st.button("Find recipes"):
                 st.warning("No recipes found for these constraints.")
             else:
                 for r in recipes:
-                    st.markdown(f"### {r['name']}")
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.write(f"Cuisine: **{r['cuisine']}**")
-                    with col2:
-                        st.write(f"Time: **{r['minutes']} min**")
-                    with col3:
-                        st.write(f"Reviews: **{r['n_reviews']}**")
+                    card = st.container(border=True)
+                    with card:
+                        st.markdown(f"### {r['name']}")
 
-                    st.write(
-                        f"Average rating (users): {r['avg_rating']:.2f}  •  "
-                        f"Predicted rating (model): {r['predicted_rating']:.2f}"
-                    )
-                    st.write("---")
+                        col1, col2, col3 = st.columns([2, 1, 1])
+                        with col1:
+                            st.write(f"Cuisine: **{r['cuisine']}**")
+                        with col2:
+                            st.write(f"Time: **{r['minutes']} min**")
+                        with col3:
+                            st.write(f"Reviews: **{r['n_reviews']}**")
+
+                        st.write(f"Average rating: {r['avg_rating']:.2f}")

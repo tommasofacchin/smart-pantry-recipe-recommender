@@ -13,6 +13,14 @@ It then calls the FastAPI backend `/recommend` endpoint and displays the recomme
 
 ---
 
+## Live demo
+
+The Streamlit app is deployed at:
+
+https://smart-pantry.streamlit.app/
+
+---
+
 ## Hosted backend
 
 the FastAPI backend is deployed on Render:

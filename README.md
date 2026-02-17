@@ -22,8 +22,9 @@ The project is split into:
 - Pandas, NumPy (data prep)
 - scikit‑learn (model training & inference)
 - FastAPI, uvicorn (backend)
+- Render (FastAPI backend hosting)
+- AWS S3 (dataset + modello)
 - Streamlit (UI)
-- AWS (planned deployment: compute + storage)
   
 ---
 
@@ -89,34 +90,36 @@ Each subfolder has its own README with more details.
 
 ## Local setup
 
-### 1. Backend API
+### 1. Backend API (FastAPI)
 
 From `api/`:
 
 ```bash
 python -m venv .venv
-.\.venv\Scripts\activate      # Windows
-# source .venv/bin/activate   # Linux / macOS
+.\\.venv\\Scripts\\activate      # Windows
+# source .venv/bin/activate      # Linux / macOS
 
 pip install -r requirements.txt
 ```
 
-You need:
+The API expects two artifacts:
 
 - `api/artifacts/recipes.parquet` – cleaned dataset  
 - `api/artifacts/recipe_rating_model.joblib` – trained model
 
-Run the API:
+Then run:
 
 ```bash
 cd api
 uvicorn app.main:app --reload
 ```
 
-- Swagger UI: `http://127.0.0.1:8000/docs`  
-- OpenAPI JSON: `http://127.0.0.1:8000/openapi.json`
+Useful endpoints:
 
-Example request:
+- Docs: `http://127.0.0.1:8000/docs`  
+- OpenAPI: `http://127.0.0.1:8000/openapi.json`
+
+Example `POST /recommend` body:
 
 ```json
 {
@@ -139,26 +142,37 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-The frontend expects the API at:
+By default the app points to a local API:
 
 ```python
-API_URL = "http://127.0.0.1:8000"  # change to the public AWS URL in production
+API_URL = "http://127.0.0.1:8000"
 ```
-
-Open the URL shown in the terminal (typically `http://localhost:8501`), set your constraints, and click **Find recipes**.
 
 ---
 
-## AWS / deployment (planned)
+## Deployment (Render + S3)
 
-Next step: deploy the FastAPI backend on AWS so that:
+In production the stack looks like this:
 
-- the API has a public URL (24/7)
-- the Streamlit app can call that URL instead of `localhost`
+- FastAPI backend running on **Render** as a web service  
+- Dataset and model stored on **AWS S3**, loaded at API startup  
+- Streamlit app (local or hosted) calling the public API URL
 
-Planned components:
+The FastAPI app in `api/` is deployed to Render with a public URL, for example:
 
-- compute: AWS EC2 or Elastic Beanstalk (Python) running the FastAPI app  
-- storage: AWS S3 for model and dataset artifacts (downloaded in `load_artifacts()` at startup)  
-- frontend: Streamlit running locally or deployed (e.g. Streamlit Community Cloud) pointing to the AWS API URL
+```text
+https://smart-pantry-recipe-recommender.onrender.com
+```
 
+At startup the service downloads:
+
+- `recipes.parquet` from S3  
+- `recipes.smart_pantry_model` from S3
+
+and keeps them in memory for serving recommendations.
+
+The Streamlit app just switches `API_URL` to that public endpoint, e.g.:
+
+```python
+API_URL = "https://smart-pantry-recipe-recommender.onrender.com"
+```

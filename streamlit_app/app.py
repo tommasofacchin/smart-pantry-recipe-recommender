@@ -49,6 +49,9 @@ if st.button("Find recipes"):
 
     try:
         resp = requests.post(f"{API_URL}/recommend", json=body, timeout=15)
+    except requests.exceptions.ReadTimeout:
+        st.warning("The backend is waking up (free hosting). Please try again in a few seconds.")
+        st.stop()
     except Exception as e:
         st.error(f"Request failed: {e}")
     else:
@@ -77,3 +80,4 @@ if st.button("Find recipes"):
                             st.write(f"Reviews: **{r['n_reviews']}**")
 
                         st.write(f"Average rating: {r['avg_rating']:.2f}")
+
